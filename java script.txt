@@ -1,0 +1,489 @@
+// PAGEVAULT - FRONTEND JAVASCRIPT
+
+const defaultBooks = [
+    {
+        id: 1,
+        title: "Operating System Concepts",
+        author: "Abraham Silberschatz",
+        edition: "10th Edition",
+        course: "CS301",
+        department: "CSE",
+        condition: "Good",
+        status: "Available",
+        owner: "Student A"
+    },
+    {
+        id: 2,
+        title: "Computer Networks",
+        author: "Andrew S. Tanenbaum",
+        edition: "5th Edition",
+        course: "CS201",
+        department: "CSE",
+        condition: "Excellent",
+        status: "Available",
+        owner: "Student B"
+    },
+    {
+        id: 3,
+        title: "Engineering Mathematics",
+        author: "B.S. Grewal",
+        edition: "44th Edition",
+        course: "MA101",
+        department: "Mathematics",
+        condition: "Good",
+        status: "Available",
+        owner: "Student C"
+    },
+    {
+        id: 4,
+        title: "Data Structures",
+        author: "Reema Thareja",
+        edition: "3rd Edition",
+        course: "CS202",
+        department: "CSE",
+        condition: "Fair",
+        status: "Available",
+        owner: "Student D"
+    },
+    {
+        id: 5,
+        title: "Digital Electronics",
+        author: "Morris Mano",
+        edition: "6th Edition",
+        course: "EC201",
+        department: "ECE",
+        condition: "Good",
+        status: "Available",
+        owner: "Student E"
+    }
+];
+
+let books = JSON.parse(localStorage.getItem("books")) || defaultBooks;
+let requests = JSON.parse(localStorage.getItem("requests")) || [];
+
+// Save data in browser
+
+function saveData() {
+    localStorage.setItem("books", JSON.stringify(books));
+    localStorage.setItem("requests", JSON.stringify(requests));
+}
+
+// Display books
+
+function displayBooks() {
+
+    const bookList = document.getElementById("bookList");
+
+    const search = document.getElementById("searchInput")
+        .value.toLowerCase();
+
+    const filter = document.getElementById("filterStatus").value;
+
+    const filteredBooks = books.filter(book => {
+
+        const matchesSearch =
+            book.title.toLowerCase().includes(search) ||
+            book.course.toLowerCase().includes(search) ||
+            book.department.toLowerCase().includes(search);
+
+        const matchesStatus =
+            filter === "All" || book.status === filter;
+
+        return matchesSearch && matchesStatus;
+    });
+
+    bookList.innerHTML = "";
+
+    if (filteredBooks.length === 0) {
+        bookList.innerHTML = "<p class='empty'>No books found.</p>";
+        return;
+    }
+
+    filteredBooks.forEach(book => {
+
+        const card = document.createElement("div");
+        card.className = "book-card";
+
+        const buttonText =
+            book.status === "Available" ? "Request Borrow" : "Not Available";
+
+        card.innerHTML = `
+            <div class="book-icon">📘</div>
+
+            <h3>${book.title}</h3>
+
+            <p><b>Author:</b> ${book.author}</p>
+            <p><b>Edition:</b> ${book.edition}</p>
+            <p><b>Course:</b> ${book.course}</p>
+            <p><b>Department:</b> ${book.department}</p>
+            <p><b>Condition:</b> ${book.condition}</p>
+            <p><b>Owner:</b> ${book.owner}</p>
+
+            <span class="status ${book.status}">
+                ${book.status}
+            </span>
+
+            <br>
+
+            <button
+                onclick="requestBook(${book.id})"
+                ${book.status !== "Available" ? "disabled" : ""}>
+                ${buttonText}
+            </button>
+        `;
+
+        bookList.appendChild(card);
+    });
+}
+
+// Add a new book
+
+document.getElementById("bookForm")
+.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const newBook = {
+        id: Date.now(),
+        title: document.getElementById("title").value,
+        author: document.getElementById("author").value,
+        edition: document.getElementById("edition").value,
+        course: document.getElementById("course").value,
+        department: document.getElementById("department").value,
+        condition: document.getElementById("condition").value,
+        status: "Available",
+        owner: "You"
+    };
+
+    books.push(newBook);
+
+    saveData();
+    displayBooks();
+    displayDashboard();
+
+    this.reset();
+
+    alert("Book added successfully!");
+});
+
+// Request a book
+
+function requestBook(bookId) {
+
+    const book = books.find(b => b.id === bookId);
+
+    if (!book || book.status !== "Available") {
+        alert("This book is not available!");
+        return;
+    }
+
+    book.status = "Reserved";
+
+    requests.push({
+        id: Date.now(),
+        bookId: bookId,
+        bookTitle: book.title,
+        borrower: "You",
+        owner: book.owner,
+        status: "Pending",
+        dueDate: null
+    });
+
+    saveData();
+
+    displayBooks();
+    displayDashboard();
+
+    alert("Borrow request submitted successfully!");
+}
+
+// Display dashboard
+
+function displayDashboard() {
+
+    const myBooks = document.getElementById("myBooks");
+    const requestList = document.getElementById("requests");
+    const history = document.getElementById("history");
+
+    const listedBooks = books.filter(book => book.owner === "You");
+
+    const pending = requests.filter(r => r.status === "Pending");
+
+    const borrowed = requests.filter(r => r.status === "Approved");
+
+    document.getElementById("totalBooks").innerText =
+        listedBooks.length;
+
+    document.getElementById("totalRequests").innerText =
+        pending.length;
+
+    document.getElementById("borrowedBooks").innerText =
+        borrowed.length;
+
+    // My listed books
+
+    myBooks.innerHTML = "";
+
+    if (listedBooks.length === 0) {
+        myBooks.innerHTML = "<p class='empty'>No books listed yet.</p>";
+    }
+
+    listedBooks.forEach(book => {
+
+        myBooks.innerHTML += `
+            <div class="book-card">
+                <h3>${book.title}</h3>
+                <p>Course: ${book.course}</p>
+                <p>Condition: ${book.condition}</p>
+                <span class="status ${book.status}">
+                    ${book.status}
+                </span>
+            </div>
+        `;
+    });
+
+    // Borrow requests
+
+    requestList.innerHTML = "";
+
+    if (requests.length === 0) {
+        requestList.innerHTML =
+            "<p class='empty'>No borrow requests yet.</p>";
+    }
+
+    requests.forEach(request => {
+
+        const book = books.find(b => b.id === request.bookId);
+
+        let buttons = "";
+
+        if (request.status === "Pending") {
+            buttons = `
+                <button onclick="approveRequest(${request.id})">
+                    Approve
+                </button>
+
+                <button onclick="rejectRequest(${request.id})">
+                    Reject
+                </button>
+            `;
+        }
+
+        if (request.status === "Approved") {
+            buttons = `
+                <button onclick="returnBook(${request.id})">
+                    Mark Returned
+                </button>
+            `;
+        }
+
+        requestList.innerHTML += `
+            <div class="request-item">
+
+                <h3>${request.bookTitle}</h3>
+
+                <p>Borrower: ${request.borrower}</p>
+                <p>Owner: ${request.owner}</p>
+                <p>Status: <b>${request.status}</b></p>
+
+                ${request.dueDate ? `
+                    <p>Due Date: ${request.dueDate}</p>
+                    <p>${getCountdown(request.dueDate)}</p>
+                ` : ""}
+
+                ${buttons}
+
+            </div>
+        `;
+    });
+
+    // Borrowing history
+
+    history.innerHTML = "";
+
+    const completed = requests.filter(r => r.status === "Returned");
+
+    if (completed.length === 0) {
+        history.innerHTML =
+            "<p class='empty'>No borrowing history yet.</p>";
+    }
+
+    completed.forEach(request => {
+
+        history.innerHTML += `
+            <div class="request-item">
+                <h3>${request.bookTitle}</h3>
+                <p>Status: Returned</p>
+                <p>Borrower: ${request.borrower}</p>
+            </div>
+        `;
+    });
+}
+
+// Approve request
+
+function approveRequest(requestId) {
+
+    const request = requests.find(r => r.id === requestId);
+
+    if (!request || request.status !== "Pending") return;
+
+    const book = books.find(b => b.id === request.bookId);
+
+    if (!book || book.status !== "Reserved") {
+        alert("Book is no longer available.");
+        return;
+    }
+
+    request.status = "Approved";
+
+    const due = new Date();
+    due.setDate(due.getDate() + 7);
+
+    request.dueDate = due.toLocaleDateString("en-IN");
+
+    book.status = "Borrowed";
+
+    saveData();
+
+    displayBooks();
+    displayDashboard();
+
+    alert("Request approved! Return the book within 7 days.");
+}
+
+// Reject request
+
+function rejectRequest(requestId) {
+
+    const request = requests.find(r => r.id === requestId);
+
+    if (!request || request.status !== "Pending") return;
+
+    const book = books.find(b => b.id === request.bookId);
+
+    request.status = "Rejected";
+
+    if (book) {
+        book.status = "Available";
+    }
+
+    saveData();
+
+    displayBooks();
+    displayDashboard();
+
+    alert("Request rejected.");
+}
+
+// Return book
+
+function returnBook(requestId) {
+
+    const request = requests.find(r => r.id === requestId);
+
+    if (!request || request.status !== "Approved") return;
+
+    request.status = "Returned";
+
+    const book = books.find(b => b.id === request.bookId);
+
+    if (book) {
+        book.status = "Available";
+    }
+
+    saveData();
+
+    displayBooks();
+    displayDashboard();
+
+    alert("Book returned successfully!");
+}
+
+// Calculate countdown
+
+function getCountdown(dueDate) {
+
+    const parts = dueDate.split("/");
+
+    const due = new Date(
+        Number(parts[2]),
+        Number(parts[1]) - 1,
+        Number(parts[0])
+    );
+
+    due.setHours(23, 59, 59, 999);
+
+    const remaining = due - new Date();
+
+    if (remaining < 0) {
+        return "⚠️ Overdue! Please return the book.";
+    }
+
+    const days = Math.ceil(remaining / (1000 * 60 * 60 * 24));
+
+    return `⏳ ${days} day(s) remaining`;
+}
+
+// Reminder notifications
+
+function checkReminders() {
+
+    const reminder = document.getElementById("reminder");
+
+    const active = requests.filter(r =>
+        r.status === "Approved"
+    );
+
+    const alerts = active.filter(r => {
+        const countdown = getCountdown(r.dueDate);
+        return countdown.includes("Overdue") ||
+               countdown.includes("0 day");
+    });
+
+    if (alerts.length > 0) {
+
+        reminder.style.display = "block";
+
+        reminder.innerText =
+            "⚠️ Reminder: You have books due for return. Please check your dashboard!";
+
+        if ("Notification" in window &&
+            Notification.permission === "granted") {
+
+            // Browser notification is shown on user permission.
+            if (!sessionStorage.getItem("reminderShown")) {
+                new Notification("PageVault Return Reminder", {
+                    body: "Please check your book return deadlines."
+                });
+
+                sessionStorage.setItem("reminderShown", "yes");
+            }
+        }
+
+    } else {
+        reminder.style.display = "none";
+    }
+}
+
+// Search and filter events
+
+document.getElementById("searchInput")
+.addEventListener("input", displayBooks);
+
+document.getElementById("filterStatus")
+.addEventListener("change", displayBooks);
+
+// Ask permission for browser notifications
+
+if ("Notification" in window &&
+    Notification.permission === "default") {
+
+    Notification.requestPermission();
+}
+
+// Initialize application
+
+displayBooks();
+displayDashboard();
+checkReminders();

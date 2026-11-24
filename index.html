@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PageVault - Book Exchange</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">📚 PageVault</div>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#catalog">Book Catalog</a>
+        <a href="#addBook">List a Book</a>
+        <a href="#dashboard">My Dashboard</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <h1>Share Books, Share Knowledge</h1>
+    <p>Discover, Borrow and Exchange Books with Students on Campus.</p>
+    <a href="#catalog" class="hero-btn">Explore Books</a>
+</section>
+
+<div id="reminder" class="reminder"></div>
+
+<section class="container" id="catalog">
+    <h2>Explore Book Catalog</h2>
+
+    <div class="search-box">
+        <input type="text" id="searchInput"
+        placeholder="Search title, course code or department...">
+
+        <select id="filterStatus">
+            <option value="All">All Books</option>
+            <option value="Available">Available</option>
+            <option value="Borrowed">Borrowed</option>
+            <option value="Reserved">Reserved</option>
+        </select>
+    </div>
+
+    <div id="bookList" class="book-grid"></div>
+</section>
+
+<section class="container" id="addBook">
+    <h2>List Your Book</h2>
+
+    <form id="bookForm">
+        <input type="text" id="title"
+        placeholder="Book Title" required>
+
+        <input type="text" id="author"
+        placeholder="Author Name" required>
+
+        <input type="text" id="edition"
+        placeholder="Edition" required>
+
+        <input type="text" id="course"
+        placeholder="Course Code (Example: CS201)" required>
+
+        <input type="text" id="department"
+        placeholder="Department" required>
+
+        <select id="condition" required>
+            <option value="">Select Condition</option>
+            <option>Excellent</option>
+            <option>Good</option>
+            <option>Fair</option>
+        </select>
+
+        <button type="submit">Add Book</button>
+    </form>
+</section>
+
+<section class="container" id="dashboard">
+    <h2>My Dashboard</h2>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3 id="totalBooks">0</h3>
+            <p>Listed Books</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="totalRequests">0</h3>
+            <p>Pending Requests</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="borrowedBooks">0</h3>
+            <p>Borrowed Books</p>
+        </div>
+    </div>
+
+    <h3>My Listed Books</h3>
+    <div id="myBooks" class="book-grid"></div>
+
+    <h3>Borrow Requests</h3>
+    <div id="requests" class="request-list"></div>
+
+    <h3>Borrowing History</h3>
+    <div id="history" class="request-list"></div>
+</section>
+
+<footer>
+    <p>© 2026 PageVault | OpenShelf Book Exchange</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
